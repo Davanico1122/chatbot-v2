@@ -7,18 +7,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const chatMessages = document.getElementById("chat-messages");
   const languageSelect = document.getElementById("language-selector");
   const typingIndicator = document.getElementById("typing-indicator");
+  const badge = document.getElementById("notification-badge");
 
-  // === Toggle Chatbot Window ===
+  // Tampilkan chatbot
   toggleBtn.addEventListener("click", () => {
     chatbotWindow.style.display = "flex";
-    document.getElementById("notification-badge").style.display = "none";
+    if (badge) badge.style.display = "none";
   });
 
+  // Sembunyikan chatbot
   closeBtn.addEventListener("click", () => {
     chatbotWindow.style.display = "none";
   });
 
-  // === Send Message Events ===
+  // Kirim pesan saat tombol diklik atau Enter ditekan
   sendBtn.addEventListener("click", sendMessage);
   messageInput.addEventListener("keypress", function (e) {
     if (e.key === "Enter") sendMessage();
@@ -36,13 +38,13 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
       hideTyping();
       const lang = languageSelect.value;
-      let response;
+      let response = "";
 
       try {
         response = lang === "id" ? getBotResponseID(msg) : getBotResponseEN(msg);
       } catch (err) {
-        response = "Oops, bot gagal menjawab. Cek file responnya.";
-        console.error("Response error:", err);
+        response = "⚠️ Bot error. Cek file responsenya.";
+        console.error("Bot error:", err);
       }
 
       appendMessage(response, "bot");
@@ -50,31 +52,31 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function appendMessage(text, sender) {
-    const msgDiv = document.createElement("div");
-    msgDiv.className = `message ${sender}-message`;
-    msgDiv.innerHTML = `
+    const messageEl = document.createElement("div");
+    messageEl.className = `message ${sender}-message`;
+    messageEl.innerHTML = `
       <div class="message-avatar">
         <i class="fas fa-${sender === "bot" ? "robot" : "user"}"></i>
       </div>
       <div class="message-content"><p></p></div>
     `;
-    const messageText = msgDiv.querySelector("p");
-    chatMessages.appendChild(msgDiv);
+    const p = messageEl.querySelector("p");
+    chatMessages.appendChild(messageEl);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 
-    // Bot typing effect
+    // Efek ketik bot
     if (sender === "bot") {
       let i = 0;
       const typing = setInterval(() => {
         if (i < text.length) {
-          messageText.textContent += text.charAt(i);
+          p.textContent += text.charAt(i);
           i++;
         } else {
           clearInterval(typing);
         }
-      }, 25);
+      }, 20);
     } else {
-      messageText.textContent = text;
+      p.textContent = text;
     }
   }
 
@@ -86,14 +88,13 @@ document.addEventListener("DOMContentLoaded", () => {
     typingIndicator.style.display = "none";
   }
 
-  // === Language Change Event ===
+  // Ganti bahasa dan reset chat
   languageSelect.addEventListener("change", () => {
+    chatMessages.innerHTML = "";
     const greeting =
       languageSelect.value === "id"
         ? "Halo! Saya AI Assistant. Ada yang bisa saya bantu? 😊"
         : "Hello! I'm your AI Assistant. How can I help you? 😊";
-
-    chatMessages.innerHTML = "";
     appendMessage(greeting, "bot");
   });
 });
