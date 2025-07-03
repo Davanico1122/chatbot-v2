@@ -11,19 +11,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Tampilkan chatbot
   toggleBtn.addEventListener("click", () => {
-    chatbotWindow.style.display = "flex";
+    chatbotWindow.classList.add("active");
     if (badge) badge.style.display = "none";
   });
 
-  // Sembunyikan chatbot
+  // Tutup chatbot
   closeBtn.addEventListener("click", () => {
-    chatbotWindow.style.display = "none";
+    chatbotWindow.classList.remove("active");
   });
 
-  // Kirim pesan saat tombol diklik atau Enter ditekan
+  // Kirim pesan saat klik tombol
   sendBtn.addEventListener("click", sendMessage);
+
+  // Kirim pesan saat tekan Enter
   messageInput.addEventListener("keypress", function (e) {
     if (e.key === "Enter") sendMessage();
+  });
+
+  // Ganti bahasa
+  languageSelect.addEventListener("change", () => {
+    chatMessages.innerHTML = "";
+    const greeting =
+      languageSelect.value === "id"
+        ? "Halo! Saya AI Assistant. Ada yang bisa saya bantu? 😊"
+        : "Hello! I'm your AI Assistant. How can I help you? 😊";
+    appendMessage(greeting, "bot");
   });
 
   function sendMessage() {
@@ -41,9 +53,11 @@ document.addEventListener("DOMContentLoaded", () => {
       let response = "";
 
       try {
-        response = lang === "id" ? getBotResponseID(msg) : getBotResponseEN(msg);
+        response = lang === "id"
+          ? getBotResponseID(msg)
+          : getBotResponseEN(msg);
       } catch (err) {
-        response = "⚠️ Bot error. Cek file responsenya.";
+        response = "⚠️ Bot error. Cek file respon.";
         console.error("Bot error:", err);
       }
 
@@ -64,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
     chatMessages.appendChild(messageEl);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 
-    // Efek ketik bot
+    // Efek ketik jika dari bot
     if (sender === "bot") {
       let i = 0;
       const typing = setInterval(() => {
@@ -81,20 +95,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function showTyping() {
-    typingIndicator.style.display = "flex";
+    typingIndicator.classList.add("active");
   }
 
   function hideTyping() {
-    typingIndicator.style.display = "none";
+    typingIndicator.classList.remove("active");
   }
-
-  // Ganti bahasa dan reset chat
-  languageSelect.addEventListener("change", () => {
-    chatMessages.innerHTML = "";
-    const greeting =
-      languageSelect.value === "id"
-        ? "Halo! Saya AI Assistant. Ada yang bisa saya bantu? 😊"
-        : "Hello! I'm your AI Assistant. How can I help you? 😊";
-    appendMessage(greeting, "bot");
-  });
 });
