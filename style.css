@@ -15,8 +15,8 @@ body {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    width: 60px;
-    height: 60px;
+    width: 45px;
+    height: 45px;
     background: linear-gradient(135deg, #00ffc8, #00d4a8);
     border-radius: 50%;
     display: flex;
@@ -35,7 +35,7 @@ body {
 }
 
 .chatbot-toggle i {
-    font-size: 24px;
+    font-size: 18px;
     color: #111;
     transition: transform 0.3s ease;
 }
