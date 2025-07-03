@@ -1,74 +1,99 @@
-
-// File: chatbot.js
-
 document.addEventListener("DOMContentLoaded", () => {
-  const chatbot = document.getElementById('chatbot');
-  const chatMessages = document.getElementById('chatMessages');
-  const messageInput = document.getElementById('messageInput');
-  const languageSelect = document.getElementById('languageSelect') || { value: 'id' };
+  const chatbotWindow = document.getElementById("chatbot-window");
+  const toggleBtn = document.getElementById("chatbot-toggle");
+  const closeBtn = document.getElementById("close-btn");
+  const sendBtn = document.getElementById("send-btn");
+  const messageInput = document.getElementById("message-input");
+  const chatMessages = document.getElementById("chat-messages");
+  const languageSelect = document.getElementById("language-selector");
+  const typingIndicator = document.getElementById("typing-indicator");
 
-  window.toggleChatbot = function () {
-    chatbot.style.display = chatbot.style.display === 'none' || chatbot.style.display === '' ? 'flex' : 'none';
+  // === Toggle Chatbot Window ===
+  toggleBtn.addEventListener("click", () => {
+    chatbotWindow.style.display = "flex";
+    document.getElementById("notification-badge").style.display = "none";
+  });
+
+  closeBtn.addEventListener("click", () => {
+    chatbotWindow.style.display = "none";
+  });
+
+  // === Send Message Events ===
+  sendBtn.addEventListener("click", sendMessage);
+  messageInput.addEventListener("keypress", function (e) {
+    if (e.key === "Enter") sendMessage();
+  });
+
+  function sendMessage() {
+    const msg = messageInput.value.trim();
+    if (!msg) return;
+
+    appendMessage(msg, "user");
+    messageInput.value = "";
+
+    showTyping();
+
+    setTimeout(() => {
+      hideTyping();
+      const lang = languageSelect.value;
+      let response;
+
+      try {
+        response = lang === "id" ? getBotResponseID(msg) : getBotResponseEN(msg);
+      } catch (err) {
+        response = "Oops, bot gagal menjawab. Cek file responnya.";
+        console.error("Response error:", err);
+      }
+
+      appendMessage(response, "bot");
+    }, 600);
   }
 
-  function addMessage(text, sender = 'bot') {
-    const msgDiv = document.createElement('div');
-    msgDiv.className = `message ${sender}`;
-    const bubble = document.createElement('div');
-    bubble.className = 'message-bubble';
-    bubble.textContent = '';
-    msgDiv.appendChild(bubble);
+  function appendMessage(text, sender) {
+    const msgDiv = document.createElement("div");
+    msgDiv.className = `message ${sender}-message`;
+    msgDiv.innerHTML = `
+      <div class="message-avatar">
+        <i class="fas fa-${sender === "bot" ? "robot" : "user"}"></i>
+      </div>
+      <div class="message-content"><p></p></div>
+    `;
+    const messageText = msgDiv.querySelector("p");
     chatMessages.appendChild(msgDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 
-    if (sender === 'bot') {
+    // Bot typing effect
+    if (sender === "bot") {
       let i = 0;
       const typing = setInterval(() => {
         if (i < text.length) {
-          bubble.textContent += text.charAt(i);
+          messageText.textContent += text.charAt(i);
           i++;
         } else {
           clearInterval(typing);
         }
       }, 25);
     } else {
-      bubble.textContent = text;
+      messageText.textContent = text;
     }
   }
 
-  window.sendMessage = function () {
-    const msg = messageInput.value.trim();
-    if (!msg) return;
-
-    addMessage(msg, 'user');
-    messageInput.value = '';
-
-    setTimeout(() => {
-      const lang = languageSelect.value || 'id';
-      let response = '';
-
-      try {
-        response = lang === 'id' ? getBotResponseID(msg) : getBotResponseEN(msg);
-      } catch (err) {
-        response = "Oops, bot gagal menjawab. Periksa file responnya!";
-        console.error("Error getting bot response:", err);
-      }
-
-      addMessage(response, 'bot');
-    }, 500);
+  function showTyping() {
+    typingIndicator.style.display = "flex";
   }
 
-  window.handleKeyPress = function (e) {
-    if (e.key === 'Enter') sendMessage();
+  function hideTyping() {
+    typingIndicator.style.display = "none";
   }
 
-  window.changeLanguage = function () {
-    const lang = languageSelect.value;
-    const greeting = lang === 'id'
-      ? "Halo! Saya AI Assistant. Ada yang bisa saya bantu? 😊"
-      : "Hello! I'm your AI Assistant. How can I help you? 😊";
+  // === Language Change Event ===
+  languageSelect.addEventListener("change", () => {
+    const greeting =
+      languageSelect.value === "id"
+        ? "Halo! Saya AI Assistant. Ada yang bisa saya bantu? 😊"
+        : "Hello! I'm your AI Assistant. How can I help you? 😊";
 
-    chatMessages.innerHTML = '';
-    addMessage(greeting, 'bot');
-  }
+    chatMessages.innerHTML = "";
+    appendMessage(greeting, "bot");
+  });
 });
